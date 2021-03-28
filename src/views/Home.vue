@@ -1,9 +1,73 @@
 <template>
   <div class="home">
-    <div class="container">
+    <div class="container" v-if="weekShow">
       <div class="nav">
         <div class="top">
           <h2>預約行事曆</h2>
+          <div class="content-show">
+            <button>日檢視</button>
+            <button>莉</button>
+          </div>
+        </div>
+        <div class="bottom">
+          <div class="cal-icon">
+            <font-awesome-icon
+              class="cal-icon-svg"
+              :icon="['far', 'calendar']"
+            />
+          </div>
+          <div class="cal-show">
+            <div class="cal-wrapper">
+              <div class="day">M</div>
+              <div class="date">01</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">T</div>
+              <div class="date">02</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">W</div>
+              <div class="date">03</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">T</div>
+              <div class="date">04</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">F</div>
+              <div class="date">05</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">S</div>
+              <div class="date">06</div>
+            </div>
+            <div class="cal-wrapper">
+              <div class="day">S</div>
+              <div class="date">07</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cal-middle">
+        <div class="week" v-for="(time, index) in daytimes" :key="index">
+          <p>{{ time }} :00 am</p>
+
+          <div class="day" v-for="(j, index) in 8" :key="index"></div>
+        </div>
+      </div>
+      <div class="cal-bottom">
+        <button>+ 新增預約</button>
+      </div>
+    </div>
+    <div class="container" v-else>
+      <div class="nav">
+        <div class="top">
+          <div class="right-side">
+            <div class="left-arrow"></div>
+            <div class="current-date">2020/ 4/ 4</div>
+            <div class="right-arrow"></div>
+          </div>
+
           <div class="content-show">
             <button>周檢視</button>
             <button>莉</button>
@@ -49,10 +113,10 @@
         </div>
       </div>
       <div class="cal-middle">
-        <div class="week" v-for="i in 24" :key="i.id">
-          <p>{{ i }} :00 am</p>
+        <div class="time" v-for="(time, index) in daytimes" :key="index">
+          <p>{{ time }} :00 am</p>
 
-          <div class="day" v-for="j in 8" :key="j.id"></div>
+          <div class="one-day" v-for="(j, index) in 2" :key="index"></div>
         </div>
       </div>
       <div class="cal-bottom">
@@ -66,6 +130,33 @@
 export default {
   data() {
     return {
+      daytimes: [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+      ],
+      weekdays: ["M", "T", "W", "T", "F", "S", "S"],
       today: {
         year: 0,
         month: 0,
@@ -78,6 +169,7 @@ export default {
         date: 0,
         day: 0,
       },
+      weekShow: false,
     };
   },
 
@@ -101,6 +193,7 @@ export default {
 
 .nav {
   width: 100%;
+  height: 90px;
   background: #ffffff;
   -webkit-box-shadow: 0px 2px 12px 0px rgba(0, 0, 0, 0.1);
   -moz-box-shadow: 0px 2px 12px 0px rgba(0, 0, 0, 0.1);
@@ -112,6 +205,33 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 50px;
+}
+
+.nav .top .right-side {
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+}
+.nav .top .right-side .left-arrow,
+.nav .top .right-side .right-arrow {
+  height: 20px;
+  width: 20px;
+  background: #9d9d9d;
+  margin-right: 1rem;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  line-height: 20px;
+  cursor: pointer;
+}
+.nav .top .right-side .left-arrow::after {
+  content: "<";
+  color: white;
+}
+
+.nav .top .right-side .right-arrow::after {
+  content: ">";
+  color: white;
 }
 
 .nav .top h2 {
@@ -180,12 +300,12 @@ export default {
   margin-top: 1rem;
 }
 
-.cal-middle .week {
+.cal-middle .time {
   display: flex;
   position: relative;
 }
 
-.cal-middle .week p {
+.cal-middle .time p {
   white-space: nowrap;
   font-size: 10px;
   align-items: center;
@@ -194,7 +314,7 @@ export default {
   left: 3px;
 }
 
-.cal-middle .week .day {
+.cal-middle .time .day {
   width: 12%;
   height: 50px;
   border-right: 1px #e0e0e0 solid;
@@ -202,11 +322,26 @@ export default {
   display: flex;
 }
 
-.cal-middle .week .day:nth-child(2) {
+.cal-middle .time .one-day:nth-child(2) {
+  width: 15%;
+  height: 50px;
+  border-right: 1px #e0e0e0 solid;
+  border-bottom: 1px #e0e0e0 solid;
+  display: flex;
+}
+
+.cal-middle .time .one-day:nth-child(3) {
+  width: 85%;
+  height: 50px;
+  border-bottom: 1px #e0e0e0 solid;
+  display: flex;
+}
+
+.cal-middle .time .day:nth-child(2) {
   width: calc(100% - (12% * 7));
 }
 
-.cal-middle .week .day:nth-child(9) {
+.cal-middle .time .day:nth-child(9) {
   border-right: none;
   border-bottom: 1px #e0e0e0 solid;
 }
