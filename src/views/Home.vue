@@ -1,16 +1,16 @@
 <template>
   <div class="home">
-    <div class="container" v-if="weekShow">
+    <div class="container" v-show="weekShow">
       <div class="nav">
         <div class="top">
           <h2>預約行事曆</h2>
           <div class="content-show">
-            <button>日檢視</button>
+            <button v-on:click.stop.prevent="showDay">日檢視</button>
             <button>莉</button>
           </div>
         </div>
         <div class="bottom">
-          <div class="cal-icon">
+          <div class="cal-icon" v-on:click.stop.prevent="showMonth">
             <font-awesome-icon
               class="cal-icon-svg"
               :icon="['far', 'calendar']"
@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="cal-middle">
-        <div class="week" v-for="(time, index) in daytimes" :key="index">
+        <div class="time" v-for="(time, index) in daytimes" :key="index">
           <p>{{ time }} :00 am</p>
 
           <div class="day" v-for="(j, index) in 8" :key="index"></div>
@@ -59,22 +59,25 @@
         <button>+ 新增預約</button>
       </div>
     </div>
-    <div class="container" v-else>
+    <div class="container" v-show="dayShow">
       <div class="nav">
         <div class="top">
           <div class="right-side">
-            <div class="left-arrow"></div>
-            <div class="current-date">2020/ 4/ 4</div>
-            <div class="right-arrow"></div>
+            <div class="left-arrow" v-on:click.stop.prevent="dateDown()"></div>
+            <div class="current-date">
+              {{ this.currentDate.year }}/ {{ this.currentDate.month + 1 }}/
+              {{ this.currentDate.date }}
+            </div>
+            <div class="right-arrow" v-on:click.stop.prevent="dateUp()"></div>
           </div>
 
           <div class="content-show">
-            <button>周檢視</button>
+            <button v-on:click.stop.prevent="showWeek">周檢視</button>
             <button>莉</button>
           </div>
         </div>
         <div class="bottom">
-          <div class="cal-icon">
+          <div class="cal-icon" v-on:click.stop.prevent="showMonth">
             <font-awesome-icon
               class="cal-icon-svg"
               :icon="['far', 'calendar']"
@@ -123,6 +126,59 @@
         <button>+ 新增預約</button>
       </div>
     </div>
+    <div class="container month" v-show="monthShow">
+      <div class="nav">
+        <div class="top-side">
+          <div class="left-side">
+            <div class="cal-icon">
+              <font-awesome-icon
+                class="cal-icon-svg"
+                :icon="['far', 'calendar']"
+              />
+            </div>
+            <h2>選擇日期</h2>
+          </div>
+          <div class="right">
+            <div class="cancel-btn" v-on:click.stop.prevent="showMonth">X</div>
+          </div>
+        </div>
+        <div class="bottom-side">
+          <div class="cal-show">
+            <div
+              class="cal-wrapper"
+              v-for="(weekday, index) in weekdays"
+              :key="index"
+            >
+              {{ weekday }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cal-middle">
+        <div v-for="(i, index) in month" :key="index">
+          2020/ {{ index + 1 }}
+          <div class="date">
+            <div
+              class="day"
+              v-for="(n, index) in currentMonthDays"
+              :key="'day' + index"
+            >
+              {{ n }}
+            </div>
+            <div
+              class="day-hidden"
+              v-for="(n, index) in 36 - (currentMonthDays + firstMonthDay)"
+              :key="'next' + index"
+            >
+              {{ n }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cal-bottom">
+        <button>選擇</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -156,29 +212,133 @@ export default {
         23,
         24,
       ],
+      currentDate: {
+        date: 0,
+        month: 0,
+        year: 0,
+      },
       weekdays: ["M", "T", "W", "T", "F", "S", "S"],
-      today: {
-        year: 0,
-        month: 0,
-        date: 0,
-        day: 0,
-      },
-      calendar: {
-        year: 0,
-        month: 0,
-        date: 0,
-        day: 0,
-      },
-      weekShow: false,
+      weekdayNames: [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      month: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ],
+
+      dayShow: false,
+      weekShow: true,
+      monthShow: false,
     };
   },
 
   created() {
-    const date = new Date();
-    this.today.year = this.calendar.year = date.getFullYear();
-    this.today.month = this.calendar.month = date.getMonth();
-    this.today.date = this.calendar.date = date.getDate();
-    this.today.day = this.calendar.day = date.getDay();
+    this.getToday();
+  },
+  computed: {
+    prevMonthDays() {
+      let year =
+        this.currentDate.month === 0
+          ? this.currentDate.year - 1
+          : this.currentDate.year;
+      let month = this.currentDate.month === 0 ? 12 : this.currentDate.month;
+      return new Date(year, month, 0).getDate();
+    },
+    firstMonthDay() {
+      let firstDay = new Date(
+        this.currentDate.year,
+        this.currentDate.month,
+        1
+      ).getDay();
+      if (firstDay === 0) firstDay = 7;
+      return firstDay;
+    },
+    currentDay() {
+      return new Date(
+        this.currentDate.year,
+        this.currentDate.month,
+        this.currentDate.date
+      ).getDay();
+    },
+    currentMonthDays() {
+      return new Date(
+        this.currentDate.year,
+        this.currentDate.month + 1,
+        0
+      ).getDate();
+    },
+  },
+  methods: {
+    getToday() {
+      let today = new Date();
+      this.currentDate.date = today.getDate();
+      this.currentDate.month = today.getMonth();
+      this.currentDate.year = today.getFullYear();
+    },
+    dateUp() {
+      if (this.currentDate.date === this.currentMonthDays) {
+        this.currentDate.date = 1;
+        this.monthUp();
+      } else {
+        this.currentDate.date += 1;
+      }
+    },
+    dateDown() {
+      if (this.currentDate.date === 1) {
+        this.currentDate.date = this.prevMonthDays;
+        this.monthDown();
+      } else {
+        this.currentDate.date -= 1;
+      }
+    },
+    monthUp() {
+      if (this.currentDate.month === 11) {
+        this.currentDate.month = 0;
+        this.currentDate.year += 1;
+      } else {
+        this.currentDate.month += 1;
+      }
+    },
+    monthDown() {
+      if (this.currentDate.month === 0) {
+        this.currentDate.month = 11;
+        this.currentDate.year -= 1;
+      } else {
+        this.currentDate.month -= 1;
+      }
+    },
+    showMonth() {
+      if (this.monthShow === true) {
+        this.monthShow = false;
+        this.weekShow = true;
+      } else {
+        this.monthShow = true;
+        this.weekShow = false;
+        this.dayShow = false;
+      }
+    },
+    showDay() {
+      (this.dayShow = true), (this.weekShow = false);
+    },
+    showWeek() {
+      (this.dayShow = false), (this.weekShow = true);
+    },
   },
 };
 </script>
@@ -362,5 +522,56 @@ export default {
   -webkit-box-shadow: 0px 1px 5px 0px rgba(87, 87, 87, 1);
   -moz-box-shadow: 0px 1px 5px 0px rgba(87, 87, 87, 1);
   box-shadow: 0px 1px 5px 0px rgba(87, 87, 87, 1);
+}
+
+/* 月顯示 */
+.month .nav .top-side {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+.month .nav .top-side .left-side {
+  display: flex;
+  align-items: center;
+}
+
+.month .nav .top-side .left-side .cal-icon {
+  background: #dedaf4;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  margin-right: 1rem;
+}
+
+.month .nav .top-side .left-side .cal-icon .cal-icon-svg {
+  color: #7f74b4;
+}
+
+.month .nav .bottom-side .cal-show {
+  display: flex;
+  justify-content: space-evenly;
+  font-weight: 600;
+}
+
+.month .cal-middle .date {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(33px, 1fr));
+  grid-gap: 10px;
+  padding: 10px 23px 23px;
+}
+.month .cal-middle .date div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  color: black;
+  border-radius: 5px;
+}
+
+.month .cal-middle .date .day-hidden {
+  opacity: 0.4;
 }
 </style>
